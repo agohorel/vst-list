@@ -6,7 +6,7 @@ let dom;
 
 // max no. of items to lookup (each page has 20 results)
 // current max is set really low to not be spammy
-let max = 20;
+let max = 40;
 let urlList = [];
 
 // insert pages to request until max
@@ -16,19 +16,27 @@ for (var i = 0; i < max; i+=20){
 }
 
 urlList.forEach((url, i) => {
+	let hasBeenRedirected = false;
 	// 1 sec. cooldown to prevent spamminess
 	setTimeout(() => {
-		request(url, (error, response, body) => {
+		request({ 
+			uri: url,
+	        followRedirect: (response) => {
+	            console.log(`Provided URL was redirected to: ${response.headers.location}. Cancelling this batch.`.red);
+	            hasBeenRedirected = true;
+	            return true;
+	        }
+    	}, (error, response, body) => {
 			if (error){
 				// print error in red if request fails outright
 				console.log(`received ${error} on ${url}`.red);
-			} else {
+			} else if (!hasBeenRedirected){
 				let status = response.statusCode;
 				// print green if OK, red if any sort of error
 				if (status >= 200 && status < 300){
-					console.log(`received status code ${response.statusCode} on ${url}`.green);
+					console.log(`received status code ${status} on ${url}`.green);
 				} else {
-					console.log(`received status code ${response.statusCode} on ${url}`.red);
+					console.log(`received status code ${status} on ${url}`.red);
 				}
 
 				// convert raw body text to dom
@@ -69,6 +77,7 @@ function constructURLs(dom){
 
 		// concatenate (hopefully) valid URLs
 		let url = `https://www.kvraudio.com/product/${productName}${authorName}`;
+		
 		productUrlList.push(url);
 	});
 	console.log(productUrlList);
@@ -81,5 +90,3 @@ function findAndReplace(string, target, replacement){
 
 	return string;
 }
-
-//@TODO test individual product URLs like we did above with the product listings pages
