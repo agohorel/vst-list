@@ -6,11 +6,11 @@ let dom;
 
 // max no. of items to lookup (each page has 20 results)
 // current max is set really low to not be spammy
-let max = 40;
+let max = 420;
 let urlList = [];
 
 // insert pages to request until max
-for (var i = 0; i < max; i+=20){
+for (var i = 400; i < max; i+=20){
 	let url = `https://www.kvraudio.com/plugins/windows/macosx/instruments/effects/hosts/free/newest/start${i}`;
 	urlList.push(url);
 }
@@ -22,7 +22,7 @@ urlList.forEach((url, i) => {
 		request({ 
 			uri: url,
 	        followRedirect: (response) => {
-	            console.log(`Provided URL was redirected to: ${response.headers.location}. Cancelling this batch.`.red);
+	            console.log(`Provided URL ${url} was redirected to: ${response.headers.location}. Cancelling this batch.`.red);
 	            hasBeenRedirected = true;
 	            return true;
 	        }
@@ -81,6 +81,8 @@ function constructURLs(dom){
 		productUrlList.push(url);
 	});
 	console.log(productUrlList);
+
+	testURLs(productUrlList);
 }
 
 function findAndReplace(string, target, replacement){
@@ -90,3 +92,43 @@ function findAndReplace(string, target, replacement){
 
 	return string;
 }
+
+function testURLs(urlArray){
+	let passed = 0;
+	let failed = 0;
+	urlArray.forEach((url, i) => {
+	// 1 sec. cooldown to prevent spamminess
+	setTimeout(() => {
+		request({ 
+			uri: url,
+	        followRedirect: (response) => {
+	            console.log(`Provided URL ${url} was redirected to: ${response.headers.location}.`.red);
+	            failed++;
+	            return true;
+	        }
+    	}, (error, response, body) => {
+				if (error){
+					// print error in red if request fails outright
+					console.log(`received ${error} on ${url}`.red);
+				} else {
+					let status = response.statusCode;
+					// print green if OK, red if any sort of error
+					if (status >= 200 && status < 300){
+						console.log(`received status code ${status} on ${url}`.green);
+						passed++;
+					} else {
+						console.log(`received status code ${status} on ${url}`.red);
+						failed++;
+					}
+				}
+			});
+		}, 1000 * i);
+	});
+
+	// @TODO fix this nonsense w/ async/await
+	setTimeout(() => {
+		console.log(`done checking this batch of URLs. ${passed} URLs passed and ${failed} URLs failed.`);
+	}, 1000 * urlArray.length)		
+}
+
+
