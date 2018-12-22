@@ -1,3 +1,8 @@
+
+// @TODO don't get/save results the way i am now.
+// all we need is the product URLs from requesting the listings pages in an array so we can make a second
+// round of requests to the individual product pages, where we can scrape all the relevant fields in one fell swoop
+
 const fs = require("fs");
 const request = require("request");
 const colors = require("colors");
@@ -9,6 +14,8 @@ const {JSDOM} = jsdom;
 let max = 200;
 let urlList = [];
 let dom;
+let cooldown = 10000;
+let vsts = {};
 
 // insert pages to request until max
 for (var i = 0; i < max; i+=20){
@@ -18,7 +25,7 @@ for (var i = 0; i < max; i+=20){
 
 urlList.forEach((url, i) => {
 	let hasBeenRedirected = false;
-	// 1 sec. cooldown to prevent spamminess
+	// cooldown to prevent spamminess
 	setTimeout(() => {
 		request({ 
 			uri: url,
@@ -42,29 +49,49 @@ urlList.forEach((url, i) => {
 
 				// convert raw body text to dom
 				dom = new JSDOM(body);
-				// pass dom to getTags() to parse 
-				getTags(dom);
+				// pass dom to getURLs() to parse 
+				getURLs(dom);
 			}
 		});
-	}, 10000 * i);
+	}, cooldown * i);
 });
 
-function getTags(dom){
+function getURLs(dom){
 	// get node list containing all product boxes on each page
 	let productBoxes = dom.window.document.querySelectorAll(".kvrpboxa");
-	let vsts = {};
+	let urls = [];
 
 	productBoxes.forEach((product) => {
-		// get product info
 		let url = product.href;
-		let name = product.childNodes[1].childNodes[1].childNodes[0].data;
-		let author = product.childNodes[1].childNodes[1].childNodes[2].data;
-		// trim off " by "
-		author = author.substring(4, author.length);
-		
-		vsts[product] = {
-			url, name, author
-		};
+		urls.push(url);
+	});
+	// function to fire off second round of requests
+}
+
+
+function getTags(urls){
+	let vsts = {}
+	// make second round of requests, get tags, build up object, call saveResults()
+	urls.forEach((url, i) => {
+		setTimeout(() => {
+			request(url, (error, response, body) => {
+				if (error){
+					console.log(`received ${error} on ${url}`.red);
+				} else {
+					// @TODO figure out how to target these (using jsdom)
+					let name = ;
+					let author = ;
+					let platform = ;
+					let description = ;
+					vsts[name] = {
+						name,
+						author,
+						platform,
+						description
+					};
+				}
+			});
+		}, cooldown * i);
 	});
 	saveResults(vsts);
 }
