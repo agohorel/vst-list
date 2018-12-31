@@ -99,7 +99,7 @@ function getTags(urls){
 						let downloadLinks = [];
 						
 						for (let i = 0; i < downloadsBoxLinks.length; i++){
-							if (downloadsBoxLinks[i].textContent === "Downloads"){
+							if (downloadsBoxLinks[i].textContent.toLowerCase() === "downloads" || downloadsBoxLinks[i].textContent.toLowerCase() === "download"){
 								downloadLinks.push(downloadsBoxLinks[i].href);
 							}
 						}
