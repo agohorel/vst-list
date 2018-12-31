@@ -103,22 +103,48 @@ function getTags(urls){
 						let downloadsBox = dom.window.document.querySelectorAll(".pdetails")[2];
 						let downloadsBoxLinks = downloadsBox.querySelectorAll("a");
 						let downloadLinks = [];
-						
+						let platforms = [];
+
 						for (let i = 0; i < downloadsBoxLinks.length; i++){
-							if (downloadsBoxLinks[i].textContent.toLowerCase() === "downloads" || downloadsBoxLinks[i].textContent.toLowerCase() === "download"){
-								downloadLinks.push(downloadsBoxLinks[i].href);
+							// links w/ even indexes are OS icons which we derive OS compatibility from	
+							if (i % 2 === 0){
+								platforms.push(downloadsBoxLinks[i].title);
+							} 
+							// links w/ odd indexes are download links						
+							else {
+								downloadLinks.push(downloadsBoxLinks[i].href);								
 							}
 						}
 
-						// @TODO get lists of formats (vst, au, etc) and platforms (win, mac, etc)
+						let formatsBox = dom.window.document.querySelectorAll(".pdetails")[1];
+						let formatsArray = formatsBox.children[0].children[0].cells[1].children;
 						let formats = [];
-						let platforms = [];
+
+						for (let i = 0; i < formatsArray.length; i++){
+							switch(formatsArray[i].title.toLowerCase()){
+								case "vst":
+									formats.push("VST");
+								break;
+								case "vst3":
+									formats.push("VST3");
+								break;
+								case "au":
+									formats.push("AU");
+								break;
+								case "aax":
+									formats.push("AAX");
+								break;
+								case "rack extension":
+									formats.push("Rack Extension");
+								break;
+							}
+						}
 
 						vsts[name] = {
 							name,
 							developer,
-							// formats,
-							// platforms,
+							formats,
+							platforms,
 							tags,
 							description,
 							downloadLinks
