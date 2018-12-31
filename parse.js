@@ -11,9 +11,9 @@ const {JSDOM} = jsdom;
 
 // max no. of items to lookup (each page has 20 results)
 // current max is set really low to not be spammy
-let max = 200;
+let max = 20;
 let urlList = [];
-let dom;
+// let dom;
 let cooldown = 10000;
 let vsts = {};
 
@@ -48,7 +48,7 @@ urlList.forEach((url, i) => {
 				}
 
 				// convert raw body text to dom
-				dom = new JSDOM(body);
+				let dom = new JSDOM(body);
 				// pass dom to getURLs() to parse 
 				getURLs(dom);
 			}
@@ -62,10 +62,11 @@ function getURLs(dom){
 	let urls = [];
 
 	productBoxes.forEach((product) => {
-		let url = product.href;
+		let url = `https://www.kvraudio.com${product.href}`;
 		urls.push(url);
 	});
-	// function to fire off second round of requests
+	console.log(urls);
+	getTags(urls);
 }
 
 
@@ -74,26 +75,49 @@ function getTags(urls){
 	// make second round of requests, get tags, build up object, call saveResults()
 	urls.forEach((url, i) => {
 		setTimeout(() => {
+			console.log(url);
 			request(url, (error, response, body) => {
 				if (error){
 					console.log(`received ${error} on ${url}`.red);
 				} else {
-					// @TODO figure out how to target these (using jsdom)
-					let name = ;
-					let author = ;
-					let platform = ;
-					let description = ;
-					vsts[name] = {
-						name,
-						author,
-						platform,
-						description
-					};
+
+					// try{
+						let dom = new JSDOM(body);
+						let detailsBox = dom.window.document.querySelector(".pdetails").children;
+
+						let name = detailsBox[0].children[0].cells[1].textContent;
+						let developer = detailsBox[0].children[1].cells[1].textContent;
+						let tags = detailsBox[0].children[3].cells[1].textContent;
+
+						// @TODO make description, link, etc. in the manner above, using children (vs childNodes) and textContent (vs innerText)
+						// let bodySection = dom.window.document.querySelector(".prodbodycon");
+						// let description = bodySection.childNodes[0].childNodes[2].textContent;
+						// let link = bodySection.childNodes[0].childNodes[4].textContent;
+
+						// @TODO get lists of formats (vst, au, etc) and platforms (win, mac, etc)
+						let formats = [];
+						let platforms = [];
+
+						vsts[name] = {
+							name,
+							developer,
+							// formats,
+							// platforms,
+							tags
+							// description,
+							// link
+						};
+						console.log(vsts[name]);
+						saveResults(vsts[name]);
+					// }
+
+					// catch(e){
+						// console.log(e)
+					// }
 				}
 			});
 		}, cooldown * i);
 	});
-	saveResults(vsts);
 }
 
 function saveResults(vsts){
