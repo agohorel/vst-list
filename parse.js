@@ -86,7 +86,15 @@ function getTags(urls){
 						let detailsBox = dom.window.document.querySelector(".pdetails").children;
 						let name = detailsBox[0].children[0].cells[1].textContent;
 						let developer = detailsBox[0].children[1].cells[1].textContent;
-						let tags = detailsBox[0].children[3].cells[1].textContent;
+						
+						
+						let tagsBox = dom.window.document.querySelector(".pdetails").children[0].children[3].cells[1].children;
+						let tags = [];
+
+						for (let i = 0; i < tagsBox.length; i++){
+							tags.push(tagsBox[i].textContent);
+						}
+
 						let bodySection = dom.window.document.querySelector(".prodbodycon");
 						let description = "";
 
