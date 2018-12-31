@@ -84,15 +84,25 @@ function getTags(urls){
 					// try{
 						let dom = new JSDOM(body);
 						let detailsBox = dom.window.document.querySelector(".pdetails").children;
-
 						let name = detailsBox[0].children[0].cells[1].textContent;
 						let developer = detailsBox[0].children[1].cells[1].textContent;
 						let tags = detailsBox[0].children[3].cells[1].textContent;
+						let bodySection = dom.window.document.querySelector(".prodbodycon");
+						let description = "";
 
-						// @TODO make description, link, etc. in the manner above, using children (vs childNodes) and textContent (vs innerText)
-						// let bodySection = dom.window.document.querySelector(".prodbodycon");
-						// let description = bodySection.childNodes[0].childNodes[2].textContent;
-						// let link = bodySection.childNodes[0].childNodes[4].textContent;
+						for (let i = 0; i < bodySection.children.length; i++){
+							description += `${bodySection.children[i].textContent}\n`;
+						}
+						
+						let downloadsBox = dom.window.document.querySelectorAll(".pdetails")[2];
+						let downloadsBoxLinks = downloadsBox.querySelectorAll("a");
+						let downloadLinks = [];
+						
+						for (let i = 0; i < downloadsBoxLinks.length; i++){
+							if (downloadsBoxLinks[i].textContent === "Downloads"){
+								downloadLinks.push(downloadsBoxLinks[i].href);
+							}
+						}
 
 						// @TODO get lists of formats (vst, au, etc) and platforms (win, mac, etc)
 						let formats = [];
@@ -103,9 +113,9 @@ function getTags(urls){
 							developer,
 							// formats,
 							// platforms,
-							tags
-							// description,
-							// link
+							tags,
+							description,
+							downloadLinks
 						};
 						console.log(vsts[name]);
 						saveResults(vsts[name]);
