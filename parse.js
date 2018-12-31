@@ -86,8 +86,6 @@ function getTags(urls){
 						let detailsBox = dom.window.document.querySelector(".pdetails").children;
 						let name = detailsBox[0].children[0].cells[1].textContent;
 						let developer = detailsBox[0].children[1].cells[1].textContent;
-						
-						
 						let tagsBox = dom.window.document.querySelector(".pdetails").children[0].children[3].cells[1].children;
 						let tags = [];
 
@@ -149,9 +147,20 @@ function saveResults(vsts){
 				else console.log("saved results to disk.");
 			});		
 		} else {
-			fs.appendFile(path, JSON.stringify(vsts, null, 2), (err) => {
-				if (err) throw err;
-				else console.log("appended results to disk.");
+			// open/read in existing json
+			fs.readFile("./vsts.json", (err, data) => {
+				if (!err){
+					// parse json into object so we can add stuff to it 
+					var json = JSON.parse(data);
+					// create new entry in json for current vst
+					json[vsts.name] = vsts;
+					// write the new changes to the file
+					fs.writeFile("./vsts.json", JSON.stringify(json, null, 2), (err) => {
+						if (!err){
+							console.log("appended results to disk.");
+						}
+					});
+				}
 			});
 		}
 	});
