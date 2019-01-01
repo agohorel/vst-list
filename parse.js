@@ -70,7 +70,7 @@ function getTags(urls){
 	// make second round of requests, get tags, build up object, call saveResults()
 	urls.forEach((url, i) => {
 		setTimeout(() => {
-			console.log(url);
+			console.log(`currently scraping ${url}`.bold.blue);
 			request(url, (error, response, body) => {
 				if (error){
 					console.log(`received ${error} on ${url}`.red);
@@ -115,6 +115,7 @@ function getTags(urls){
 						let formatsArray = formatsBox.children[0].children[0].cells[1].children;
 						let formats = [];
 
+						// check for formats and append as necessary
 						for (let i = 0; i < formatsArray.length; i++){
 							switch(formatsArray[i].title.toLowerCase()){
 								case "vst":
@@ -144,7 +145,7 @@ function getTags(urls){
 							description,
 							downloadLinks
 						};
-						console.log(vsts[name]);
+						console.log(JSON.stringify(vsts[name], null, 2).gray);
 						saveResults(vsts[name]);
 					}	
 
@@ -165,7 +166,7 @@ function saveResults(vsts){
 		if (err || stats === undefined){			
 			fs.writeFile(path, JSON.stringify(vsts, null, 2), (err) => {
 				if (err) throw err;
-				else console.log("saved results to disk.");
+				else console.log("created new json file and saved results to disk.".italic.green);
 			});		
 		} else {
 			// read-in existing json
@@ -178,7 +179,7 @@ function saveResults(vsts){
 					// write the new changes to the file
 					fs.writeFile("./vsts.json", JSON.stringify(json, null, 2), (err) => {
 						if (!err){
-							console.log("appended results to disk.");
+							console.log("appended results to disk.".italic.green);
 						}
 					});
 				}
