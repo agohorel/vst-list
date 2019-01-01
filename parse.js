@@ -75,7 +75,7 @@ function getTags(urls){
 					console.log(`received ${error} on ${url}`.red);
 				} else {
 
-					// try{
+					try{
 						let dom = new JSDOM(body);
 						let detailsBox = dom.window.document.querySelector(".pdetails").children;
 						let name = detailsBox[0].children[0].cells[1].textContent;
@@ -145,11 +145,11 @@ function getTags(urls){
 						};
 						console.log(vsts[name]);
 						saveResults(vsts[name]);
-					// }
+					}	
 
-					// catch(e){
-						// console.log(e)
-					// }
+					catch(e){
+						console.log(e)
+					}
 				}
 			});
 		}, cooldown * i);
