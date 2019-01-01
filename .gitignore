@@ -1,3 +1,4 @@
 node_modules/*
 results/*
 scrape.js
+vsts.json
