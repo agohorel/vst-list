@@ -4,8 +4,8 @@ const colors = require("colors");
 const jsdom = require("jsdom");
 const {JSDOM} = jsdom;
 
-// max no. of items to lookup (each page has 20 results)
-let max = 20;
+// max no. of items to lookup (each page has 20 results, use multiples of 20)
+let max = 40;
 let urlList = [];
 let cooldown = 10000;
 let vsts = {};
@@ -47,7 +47,8 @@ urlList.forEach((url, i) => {
 				getURLs(dom);
 			}
 		});
-	}, cooldown * i);
+		// magic # 21 is "20 URLs per page + 1 as a buffer" - this is JANK AF ASYNC @TODO MAKE LESS JANK
+	}, cooldown * 21 * i);
 });
 
 function getURLs(dom){
