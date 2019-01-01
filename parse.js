@@ -1,8 +1,3 @@
-
-// @TODO don't get/save results the way i am now.
-// all we need is the product URLs from requesting the listings pages in an array so we can make a second
-// round of requests to the individual product pages, where we can scrape all the relevant fields in one fell swoop
-
 const fs = require("fs");
 const request = require("request");
 const colors = require("colors");
@@ -10,14 +5,12 @@ const jsdom = require("jsdom");
 const {JSDOM} = jsdom;
 
 // max no. of items to lookup (each page has 20 results)
-// current max is set really low to not be spammy
 let max = 20;
 let urlList = [];
-// let dom;
 let cooldown = 10000;
 let vsts = {};
 
-// insert pages to request until max
+// insert pages to request into array until max
 for (var i = 0; i < max; i+=20){
 	let url = `https://www.kvraudio.com/plugins/windows/macosx/instruments/effects/hosts/free/newest/start${i}`;
 	urlList.push(url);
@@ -29,6 +22,7 @@ urlList.forEach((url, i) => {
 	setTimeout(() => {
 		request({ 
 			uri: url,
+			// check for redirects (invalid URLs)
 	        followRedirect: (response) => {
 	            console.log(`Provided URL ${url} was redirected to: ${response.headers.location}. Cancelling this batch.`.red);
 	            hasBeenRedirected = true;
@@ -40,11 +34,11 @@ urlList.forEach((url, i) => {
 				console.log(`received ${error} on ${url}`.red);
 			} else if (!hasBeenRedirected){
 				let status = response.statusCode;
-				// print green if OK, red if any sort of error
+				// print green if OK, yellow if any sort of error
 				if (status >= 200 && status < 300){
 					console.log(`received status code ${status} on ${url}`.green);
 				} else {
-					console.log(`received status code ${status} on ${url}`.red);
+					console.log(`received status code ${status} on ${url}`.yellow);
 				}
 
 				// convert raw body text to dom
@@ -173,7 +167,7 @@ function saveResults(vsts){
 				else console.log("saved results to disk.");
 			});		
 		} else {
-			// open/read in existing json
+			// read-in existing json
 			fs.readFile("./vsts.json", (err, data) => {
 				if (!err){
 					// parse json into object so we can add stuff to it 
