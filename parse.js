@@ -146,7 +146,7 @@ function getTags(urls){
 							downloadLinks
 						};
 						console.log(JSON.stringify(vsts[name], null, 2).gray);
-						saveResults(vsts[name]);
+						saveResults(vsts, name);
 					}	
 
 					catch(e){
@@ -158,7 +158,7 @@ function getTags(urls){
 	});
 }
 
-function saveResults(vsts){
+function saveResults(vsts, name){
 	let path = "./vsts.json";
 	// check if file exists
 	fs.stat(path, (err, stats) => {
@@ -176,8 +176,8 @@ function saveResults(vsts){
 					var json = JSON.parse(data);
 					// create new entry in json for current vst
 					json[vsts.name] = vsts;
-					// write the new changes to the file
-					fs.writeFile("./vsts.json", JSON.stringify(json, null, 2), (err) => {
+					// overwrite file w/ new changes
+					fs.writeFile("./vsts.json", JSON.stringify(json[vsts.name], null, 2), (err) => {
 						if (!err){
 							console.log("appended results to disk.".italic.green);
 						}
