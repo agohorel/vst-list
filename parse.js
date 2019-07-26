@@ -182,8 +182,8 @@ function saveResults(vsts, name) {
           console.log(
             "created new json file and saved results to disk.".italic.green
           );
-        lastChecked++;
         saveLastRequest(lastChecked);
+        regenerateCooldown();
       });
     } else {
       // read-in existing json
@@ -195,13 +195,13 @@ function saveResults(vsts, name) {
           json[vsts.name] = vsts;
           // overwrite file w/ new changes
           fs.writeFile(
-            "./vsts.json",
+            path,
             JSON.stringify(json[vsts.name], null, 2),
             err => {
               if (!err) {
                 console.log("appended results to disk.".italic.green);
-                lastChecked++;
                 saveLastRequest(lastChecked);
+                regenerateCooldown();
               }
             }
           );
@@ -212,6 +212,7 @@ function saveResults(vsts, name) {
 }
 
 function saveLastRequest(lastRequest) {
+  lastChecked++;
   fs.writeFile("./lastRequest.json", lastRequest, err => {
     if (err) {
       console.log("error writing last request".red);
@@ -219,4 +220,10 @@ function saveLastRequest(lastRequest) {
       console.log("updated last request");
     }
   });
+}
+
+function regenerateCooldown() {
+  // regenerate random cooldown between 1 and 60 seconds
+  cooldown = Math.floor(Math.random() * 59000) + 1000;
+  console.log(`new cooldown is ${cooldown/1000}s`.bgWhite.black);
 }
