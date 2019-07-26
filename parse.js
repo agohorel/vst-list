@@ -13,7 +13,7 @@ let lastChecked = Number(fs.readFileSync("./lastRequest.json")) || 0;
 
 // insert pages to request into array until max
 for (var i = lastChecked; i < max; i += 20) {
-  let url = `https://www.kvraudio.com/plugins/windows/macosx/instruments/effects/hosts/free/newest/start${i}`;
+  let url = `https://www.kvraudio.com/plugins/windows/macosx/instruments/effects/hosts/free/oldest/start${i}`;
   urlList.push(url);
 }
 
