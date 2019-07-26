@@ -8,9 +8,8 @@ const { JSDOM } = jsdom;
 let max = 5000;
 let urlList = [];
 let cooldown = 10000;
-let vsts = {};
 // get the last known request index
-let lastChecked = fs.readFileSync("./lastRequest.json") || 0;
+let lastChecked = Number(fs.readFileSync("./lastRequest.json")) || 0;
 
 // insert pages to request into array until max
 for (var i = lastChecked; i < max; i += 20) {
@@ -20,44 +19,7 @@ for (var i = lastChecked; i < max; i += 20) {
 
 urlList.forEach((url, i) => {
   let hasBeenRedirected = false;
-  // cooldown to prevent spamminess
-  setTimeout(() => {
-    request(
-      {
-        uri: url,
-        // check for redirects (invalid URLs)
-        followRedirect: response => {
-          console.log(
-            `Provided URL ${url} was redirected to: ${
-              response.headers.location
-            }. Cancelling this batch.`.red
-          );
-          hasBeenRedirected = true;
-          return true;
-        }
-      },
-      (error, response, body) => {
-        if (error) {
-          // print error in red if request fails outright
-          console.log(`received ${error} on ${url}`.red);
-        } else if (!hasBeenRedirected) {
-          let status = response.statusCode;
-          // print green if OK, yellow if any sort of error
-          if (status >= 200 && status < 300) {
-            console.log(`received status code ${status} on ${url}`.green);
-          } else {
-            console.log(`received status code ${status} on ${url}`.yellow);
-          }
-
-          // convert raw body text to dom
-          let dom = new JSDOM(body);
-          // pass dom to getURLs() to parse
-          getURLs(dom);
-        }
-      }
-    );
-    // magic # 21 is "20 URLs per page + 1 as a buffer" - this is JANK AF ASYNC @TODO MAKE LESS JANK
-  }, cooldown * 21 * i);
+  makeRequest(url, i, hasBeenRedirected);
 });
 
 function getURLs(dom) {
@@ -183,7 +145,6 @@ function saveResults(vsts, name) {
             "created new json file and saved results to disk.".italic.green
           );
         saveLastRequest(lastChecked);
-        regenerateCooldown();
       });
     } else {
       // read-in existing json
@@ -194,17 +155,12 @@ function saveResults(vsts, name) {
           // create new entry in json for current vst
           json[vsts[name].name] = vsts[name];
           // overwrite file w/ new changes
-          fs.writeFile(
-            path,
-            JSON.stringify(json, null, 2),
-            err => {
-              if (!err) {
-                console.log("appended results to disk.".italic.green);
-                saveLastRequest(lastChecked);
-                regenerateCooldown();
-              }
+          fs.writeFile(path, JSON.stringify(json, null, 2), err => {
+            if (!err) {
+              console.log("appended results to disk.".italic.green);
+              saveLastRequest(lastChecked);
             }
-          );
+          });
         }
       });
     }
@@ -222,8 +178,48 @@ function saveLastRequest(lastRequest) {
   });
 }
 
-function regenerateCooldown() {
-  // regenerate random cooldown between 1 and 60 seconds
-  cooldown = Math.floor(Math.random() * 59000) + 1000;
-  console.log(`new cooldown is ${cooldown/1000}s`.bgWhite.black);
+// function regenerateCooldown() {
+//   // regenerate random cooldown between 1 and 60 seconds
+//   return Math.floor(Math.random() * 59000) + 1000;
+// }
+
+function makeRequest(url, i, hasBeenRedirected) {
+  // cooldown to prevent spamminess
+  setTimeout(() => {
+    request(
+      {
+        uri: url,
+        // check for redirects (invalid URLs)
+        followRedirect: response => {
+          console.log(
+            `Provided URL ${url} was redirected to: ${
+              response.headers.location
+            }. Cancelling this batch.`.red
+          );
+          hasBeenRedirected = true;
+          return true;
+        }
+      },
+      (error, response, body) => {
+        if (error) {
+          // print error in red if request fails outright
+          console.log(`received ${error} on ${url}`.red);
+        } else if (!hasBeenRedirected) {
+          let status = response.statusCode;
+          // print green if OK, yellow if any sort of error
+          if (status >= 200 && status < 300) {
+            console.log(`received status code ${status} on ${url}`.green);
+          } else {
+            console.log(`received status code ${status} on ${url}`.yellow);
+          }
+
+          // convert raw body text to dom
+          let dom = new JSDOM(body);
+          // pass dom to getURLs() to parse
+          getURLs(dom);
+        }
+      }
+    );
+    // magic # 21 is "20 URLs per page + 1 as a buffer" - this is JANK AF ASYNC @TODO MAKE LESS JANK
+  }, cooldown * 21 * i);
 }
