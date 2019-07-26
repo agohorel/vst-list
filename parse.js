@@ -182,6 +182,8 @@ function saveResults(vsts, name) {
           console.log(
             "created new json file and saved results to disk.".italic.green
           );
+        lastChecked++;
+        saveLastRequest(lastChecked);
       });
     } else {
       // read-in existing json
