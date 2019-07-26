@@ -192,11 +192,11 @@ function saveResults(vsts, name) {
           // parse json into object so we can add stuff to it
           var json = JSON.parse(data);
           // create new entry in json for current vst
-          json[vsts.name] = vsts;
+          json[vsts[name].name] = vsts[name];
           // overwrite file w/ new changes
           fs.writeFile(
             path,
-            JSON.stringify(json[vsts.name], null, 2),
+            JSON.stringify(json, null, 2),
             err => {
               if (!err) {
                 console.log("appended results to disk.".italic.green);
