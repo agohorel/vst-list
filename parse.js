@@ -32,7 +32,12 @@ function getURLs(dom) {
     urls.push(url);
   });
   console.log(urls);
-  getTags(urls);
+  if (urls.length){
+    getTags(urls);
+  } else {
+    // exit process if urls array is empty (i.e. we've hit the rate limit)
+    shutdown();
+  }
 }
 
 function getTags(urls) {
@@ -178,11 +183,6 @@ function saveLastRequest(lastRequest) {
   });
 }
 
-// function regenerateCooldown() {
-//   // regenerate random cooldown between 1 and 60 seconds
-//   return Math.floor(Math.random() * 59000) + 1000;
-// }
-
 function makeRequest(url, i, hasBeenRedirected) {
   // cooldown to prevent spamminess
   setTimeout(() => {
@@ -222,4 +222,14 @@ function makeRequest(url, i, hasBeenRedirected) {
     );
     // magic # 21 is "20 URLs per page + 1 as a buffer" - this is JANK AF ASYNC @TODO MAKE LESS JANK
   }, cooldown * 21 * i);
+}
+
+function shutdown(){
+  let timestamp = Date.now();
+  fs.copyFile("./vsts.json", `./vsts_backup_${timestamp}`, (err) => {
+    if (err){
+      console.log("error backing up vsts.json".red);
+    }
+  });
+  process.exit();
 }
